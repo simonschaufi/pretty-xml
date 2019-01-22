@@ -55,8 +55,16 @@ class Formatter
             $output = array_shift($parts) . PHP_EOL;
         }
 
-        foreach ($parts as $part) {
-            $output .= $this->getOutputForPart($part);
+        $fullPart = "";
+        $numParts = count($parts);
+        foreach ($parts as $key => $part) {
+            $fullPart .= $part;
+            $nextPart = $parts[$key + 1];
+            $lonelyPart = !preg_match("(>.*</)", $part);
+            if (($numParts == $key + 1) || (!$lonelyPart) || ($lonelyPart && $nextPart[0] === "<" && $nextPart[1] !== "/")) {
+                $output .= $this->getOutputForPart($fullPart);
+                $fullPart = "";
+            }
         }
 
         return trim($output);
