@@ -26,7 +26,7 @@ To use, just give it a badly indented (but well formed) XML string:
 use PrettyXml\Formatter;
 
 $formatter = new Formatter();
-echo "<pre>" . htmlspecialchars(formatter->format('<?xml version="1.0" encoding="UTF-8"?><foo><bar>Baz</bar></foo>')) . "</pre>";
+echo "<pre>" . htmlspecialchars($formatter->format('<?xml version="1.0" encoding="UTF-8"?><foo><bar>Baz</bar></foo>')) . "</pre>";
 ```
 
 You can also change the size of the indent: ```$formatter->setIndentSize(2);```
