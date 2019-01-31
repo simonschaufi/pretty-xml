@@ -60,7 +60,7 @@ class Formatter
         foreach ($parts as $key => $part) {
             $fullPart .= $part;
             $nextPart = $parts[$key + 1];
-            $lonelyPart = !preg_match("(>.*</)", $part);
+            $lonelyPart = preg_match("(<[^/].*[^/]>)", $part);
             if (($numParts == $key + 1) || (!$lonelyPart) || ($lonelyPart && $nextPart[0] === "<" && $nextPart[1] !== "/")) {
                 $output .= $this->getOutputForPart($fullPart);
                 $fullPart = "";
