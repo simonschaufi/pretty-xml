@@ -114,6 +114,9 @@ class Formatter
      */
     private function runPost($part)
     {
+        if ($this->isOpeningCdataTag($part) && $this->isClosingCdataTag($part)) {
+            return;
+        }
         if ($this->isOpeningTag($part)) {
             $this->depth++;
         }
