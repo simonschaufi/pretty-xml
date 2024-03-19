@@ -55,11 +55,17 @@ class Formatter
             $output = array_shift($parts) . PHP_EOL;
         }
 
-        foreach ($parts as $part) {
-            $output .= $this->getOutputForPart($part);
+        foreach ($parts as $key => $part) {
+            $element = preg_replace('/<([a-zA-Z0-9\-_]+).*/', "$1", $part);
+
+            if ($element && isset($parts[$key+1]) && preg_replace('~</(.*)>~', "$1", $parts[$key+1]) == $element) {
+                $output .= $this->getOutputForPart($part, '');
+            } else {
+                $output .= $this->getOutputForPart($part);
+            }
         }
 
-        return trim($output);
+        return trim(preg_replace('~>'.$this->padChar.'+<~', '><', $output));
     }
 
     /**
@@ -76,16 +82,16 @@ class Formatter
      * @param string $part
      * @return string
      */
-    private function getOutputForPart($part)
+    private function getOutputForPart($part, $eol = PHP_EOL)
     {
         $output = '';
         $this->runPre($part);
 
         if ($this->preserveWhitespace) {
-            $output .= $part . PHP_EOL;
+            $output .= $part . $eol;
         } else {
             $part = trim($part);
-            $output .= $this->getPaddedString($part) . PHP_EOL;
+            $output .= $this->getPaddedString($part) . $eol;
         }
 
         $this->runPost($part);
