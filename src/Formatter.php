@@ -71,6 +71,9 @@ class Formatter
 
     private function runPre(string $part): void
     {
+        if ($this->isComment($part)) {
+            return;
+        }
         if ($this->isClosingTag($part)) {
             $this->depth--;
         }
@@ -78,6 +81,9 @@ class Formatter
 
     private function runPost(string $part): void
     {
+        if ($this->isComment($part)) {
+            return;
+        }
         if ($this->isOpeningCdataTag($part) && $this->isClosingCdataTag($part)) {
             return;
         }
@@ -95,6 +101,11 @@ class Formatter
     private function getPaddedString(string $part): string
     {
         return str_pad($part, strlen($part) + ($this->depth * $this->indent), $this->padChar, STR_PAD_LEFT);
+    }
+
+    private function isComment(string $part): bool
+    {
+        return (bool) preg_match('/^\s*<!--.*?-->\s*$/', $part);
     }
 
     private function isOpeningTag(string $part): bool

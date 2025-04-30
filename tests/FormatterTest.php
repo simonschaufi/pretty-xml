@@ -282,4 +282,24 @@ XML;
 XML;
         self::assertEquals($expected, $this->subject->format($input));
     }
+
+    public function testXmlWithHTMLComments(): void
+    {
+        $input = <<<XML
+<?xml version="1.0"?>
+<config>
+    <!-- comment -->
+    <type>select</type>
+</config>
+XML;
+
+        $expected = <<<XML
+<?xml version="1.0"?>
+<config>
+    <!-- comment -->
+    <type>select</type>
+</config>
+XML;
+        self::assertEquals($expected, $this->subject->format($input));
+    }
 }
