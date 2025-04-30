@@ -1,8 +1,9 @@
 # pretty-xml
 
-A tiny library for pretty printing XML, inspired purely from DomDocument's lack of ability to configure indent distance.
+A tiny library for pretty printing XML, inspired purely from DomDocument's lack
+of ability to configure indent distance.
 
-[![Latest Stable Version](https://poser.pugx.org/simonschaufi/pretty-xml/v/stable)](https://packagist.org/packages/simonschaufi/pretty-xml) 
+[![Latest Stable Version](https://poser.pugx.org/simonschaufi/pretty-xml/v/stable)](https://packagist.org/packages/simonschaufi/pretty-xml)
 [![Total Downloads](https://poser.pugx.org/simonschaufi/pretty-xml/downloads)](https://packagist.org/packages/simonschaufi/pretty-xml)
 
 ## Usage
