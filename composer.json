@@ -1,30 +1,45 @@
 {
     "name": "simonschaufi/pretty-xml",
     "description": "Library for pretty-printing XML",
-    "type": "library",
     "license": "MIT",
-    "keywords": ["xml", "pretty"],
-    "require": {
-        "php": "^7.4 || ^8.0"
-    },
-    "require-dev": {
-        "phpspec/phpspec": "~2.0",
-        "behat/behat": "~3.0",
-        "bossa/phpspec2-expect": "*"
-    },
+    "type": "library",
+    "keywords": [
+        "xml",
+        "pretty"
+    ],
     "authors": [
         {
             "name": "Shane Auckland",
             "email": "shane.auckland@gmail.com",
-            "homepage": "http://shaneauckland.co.uk"
+            "homepage": "https://shaneauckland.co.uk"
         }
     ],
+    "require": {
+        "php": "^7.4 || ^8.0"
+    },
+    "require-dev": {
+        "ergebnis/composer-normalize": "^2.47",
+        "phpunit/phpunit": "^10.5"
+    },
     "autoload": {
         "psr-0": {
             "PrettyXml": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "PrettyXml\\Tests\\": "tests"
+        }
+    },
     "config": {
-        "bin-dir": "bin"
+        "allow-plugins": {
+            "ergebnis/composer-normalize": true
+        }
+    },
+    "scripts": {
+        "fix:composer:normalize": "@composer normalize --no-check-lock"
+    },
+    "scripts-descriptions": {
+        "fix:composer:normalize": "Normalizes composer.json file content."
     }
 }
