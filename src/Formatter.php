@@ -109,11 +109,11 @@ class Formatter
 
     private function isOpeningCdataTag(string $part): bool
     {
-        return strpos($part, '<![CDATA[') !== false;
+        return str_starts_with($part, '<![CDATA[');
     }
 
     private function isClosingCdataTag(string $part): bool
     {
-        return strpos($part, ']]>') !== false;
+        return str_ends_with($part, ']]>');
     }
 }
