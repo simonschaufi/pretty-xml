@@ -2,40 +2,37 @@
 
 A tiny library for pretty printing XML, inspired purely from DomDocument's lack of ability to configure indent distance.
 
-[![Codeship Status for shanethehat/pretty-xml](https://codeship.com/projects/f39e1f60-287d-0133-aab6-66f03b379c4a/status?branch=master)](https://codeship.com/projects/97705)
-[![Build Status](https://scrutinizer-ci.com/g/shanethehat/pretty-xml/badges/build.png?b=master)](https://scrutinizer-ci.com/g/shanethehat/pretty-xml/build-status/master)
-![Quality Score](https://scrutinizer-ci.com/g/shanethehat/pretty-xml/badges/quality-score.png?b=master)
-[![Latest Stable Version](https://poser.pugx.org/shanethehat/pretty-xml/v/stable)](https://packagist.org/packages/shanethehat/pretty-xml) 
-[![Total Downloads](https://poser.pugx.org/shanethehat/pretty-xml/downloads)](https://packagist.org/packages/shanethehat/pretty-xml)
+[![Latest Stable Version](https://poser.pugx.org/simonschaufi/pretty-xml/v/stable)](https://packagist.org/packages/simonschaufi/pretty-xml) 
+[![Total Downloads](https://poser.pugx.org/simonschaufi/pretty-xml/downloads)](https://packagist.org/packages/simonschaufi/pretty-xml)
 
 ## Usage
 
 Install by adding to your composer.json:
 
-```
+```json
 {
     "require": {
-        "shanethehat/pretty-xml": "~1.0.2"
+        "simonschaufi/pretty-xml": "^1.0"
     }
 }
 ```
 
-To use, just give it a badly indented (but well formed) XML string:
+To use, give it a badly indented (but well-formed) XML string:
 
-```
+```php
 use PrettyXml\Formatter;
 
 $formatter = new Formatter();
 echo "<pre>" . htmlspecialchars($formatter->format('<?xml version="1.0" encoding="UTF-8"?><foo><bar>Baz</bar></foo>')) . "</pre>";
 ```
 
-You can also change the size of the indent: ```$formatter->setIndentSize(2);```
+You can also change the size of the indent: `$formatter->setIndentSize(2);`
 
-And you can change the indent character: ```$formatter->setIndentCharacter("\t");```
+And you can change the indent character: `$formatter->setIndentCharacter("\t");`
 
 ## License and Authors
 
-Authors: <https://github.com/shanethehat/pretty-xml/contributors>
+Authors: <https://github.com/simonschaufi/pretty-xml/contributors>
 
 Copyright (C) 2014
 
