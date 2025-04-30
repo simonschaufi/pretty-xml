@@ -4,47 +4,25 @@ namespace PrettyXml;
 
 class Formatter
 {
-    /**
-     * @var int
-     */
-    private $depth;
+    private int $depth = 0;
 
-    /**
-     * @var int
-     */
-    private $indent = 4;
+    private int $indent = 4;
 
-    /**
-     * @var string
-     */
-    private $padChar = ' ';
+    private string $padChar = ' ';
 
-    /**
-     * @var boolean
-     */
-    private $preserveWhitespace = false;
+    private bool $preserveWhitespace = false;
 
-    /**
-     * @param int $indent
-     */
-    public function setIndentSize($indent)
+    public function setIndentSize(int $indent): void
     {
-        $this->indent = intval($indent);
+        $this->indent = $indent;
     }
 
-    /**
-     * @param string $indentCharacter
-     */
-    public function setIndentCharacter($indentCharacter)
+    public function setIndentCharacter(string $indentCharacter): void
     {
         $this->padChar = $indentCharacter;
     }
 
-    /**
-     * @param string $xml
-     * @return string
-     */
-    public function format($xml)
+    public function format(string $xml): string
     {
         $output = '';
         $this->depth = 0;
@@ -58,7 +36,7 @@ class Formatter
         foreach ($parts as $key => $part) {
             $element = preg_replace('/<([a-zA-Z0-9\-_]+).*/', "$1", $part);
 
-            if ($element && isset($parts[$key+1]) && preg_replace('~</(.*)>~', "$1", $parts[$key+1]) == $element) {
+            if ($element && isset($parts[$key+1]) && preg_replace('~</(.*)>~', "$1", $parts[$key+1]) === $element) {
                 $output .= $this->getOutputForPart($part, '');
             } else {
                 $output .= $this->getOutputForPart($part);
@@ -68,21 +46,13 @@ class Formatter
         return trim(preg_replace('~>'.$this->padChar.'+<~', '><', $output));
     }
 
-    /**
-     * @param string $xml
-     * @return array
-     */
-    private function getXmlParts($xml)
+    private function getXmlParts(string $xml): array
     {
         $withNewLines = preg_replace('/(>)(<)(\/*)/', "$1\n$2$3", trim($xml));
         return explode("\n", $withNewLines);
     }
 
-    /**
-     * @param string $part
-     * @return string
-     */
-    private function getOutputForPart($part, $eol = PHP_EOL)
+    private function getOutputForPart(string $part, $eol = PHP_EOL): string
     {
         $output = '';
         $this->runPre($part);
@@ -99,20 +69,14 @@ class Formatter
         return $output;
     }
 
-    /**
-     * @param string $part
-     */
-    private function runPre($part)
+    private function runPre(string $part): void
     {
         if ($this->isClosingTag($part)) {
             $this->depth--;
         }
     }
 
-    /**
-     * @param string $part
-     */
-    private function runPost($part)
+    private function runPost(string $part): void
     {
         if ($this->isOpeningCdataTag($part) && $this->isClosingCdataTag($part)) {
             return;
@@ -128,47 +92,27 @@ class Formatter
         }
     }
 
-    /**
-     * @param string $part
-     * @return string
-     */
-    private function getPaddedString($part)
+    private function getPaddedString(string $part): string
     {
         return str_pad($part, strlen($part) + ($this->depth * $this->indent), $this->padChar, STR_PAD_LEFT);
     }
 
-    /**
-     * @param string $part
-     * @return boolean
-     */
-    private function isOpeningTag($part)
+    private function isOpeningTag(string $part): bool
     {
         return (bool) preg_match('/^<[^\/]*>$/', $part);
     }
 
-    /**
-     * @param string $part
-     * @return boolean
-     */
-    private function isClosingTag($part)
+    private function isClosingTag(string $part): bool
     {
         return (bool) preg_match('/^\s*<\//', $part);
     }
 
-    /**
-     * @param string $part
-     * @return boolean
-     */
-    private function isOpeningCdataTag($part)
+    private function isOpeningCdataTag(string $part): bool
     {
         return strpos($part, '<![CDATA[') !== false;
     }
 
-    /**
-     * @param string $part
-     * @return boolean
-     */
-    private function isClosingCdataTag($part)
+    private function isClosingCdataTag(string $part): bool
     {
         return strpos($part, ']]>') !== false;
     }

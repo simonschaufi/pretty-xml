@@ -4,6 +4,9 @@
     "type": "library",
     "license": "MIT",
     "keywords": ["xml", "pretty"],
+    "require": {
+        "php": "^7.4 || ^8.0"
+    },
     "require-dev": {
         "phpspec/phpspec": "~2.0",
         "behat/behat": "~3.0",
