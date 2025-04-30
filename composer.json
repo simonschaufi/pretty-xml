@@ -22,8 +22,8 @@
         "phpunit/phpunit": "^10.5"
     },
     "autoload": {
-        "psr-0": {
-            "PrettyXml": "src/"
+        "psr-4": {
+            "PrettyXml\\": "src"
         }
     },
     "autoload-dev": {
