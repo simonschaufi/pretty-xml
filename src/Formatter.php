@@ -4,13 +4,9 @@ namespace PrettyXml;
 
 class Formatter
 {
-    private int $depth = 0;
-
     private int $indent = 4;
 
     private string $padChar = ' ';
-
-    private bool $preserveWhitespace = false;
 
     public function setIndentSize(int $indent): void
     {
@@ -24,107 +20,64 @@ class Formatter
 
     public function format(string $xml): string
     {
-        $output = '';
-        $this->depth = 0;
+        $lines = $this->splitIntoLines($xml);
+        $inComment = false;
+        $deep = 0;
+        $str = '';
 
-        $parts = $this->getXmlParts($xml);
-
-        if (strpos($parts[0], '<?xml') === 0) {
-            $output = array_shift($parts) . PHP_EOL;
-        }
-
-        foreach ($parts as $key => $part) {
-            $element = preg_replace('/<([a-zA-Z0-9\-_]+).*/', "$1", $part);
-
-            if ($element && isset($parts[$key+1]) && preg_replace('~</(.*)>~', "$1", $parts[$key+1]) === $element) {
-                $output .= $this->getOutputForPart($part, '');
+        foreach ($lines as $i => $line) {
+            if (str_contains($line, '<!')) {
+                $str .= $this->getPaddedString($line, $deep);
+                $inComment = true;
+                if (str_contains($line, '-->') || str_contains($line, ']>') || str_contains($line, '!DOCTYPE')) {
+                    $inComment = false;
+                }
+            } elseif (str_contains($line, '-->') || str_contains($line, ']>')) {
+                $str .= $line;
+                $inComment = false;
+            } elseif (
+                isset($lines[$i - 1])
+                && preg_match('/^<\w/', $lines[$i - 1])
+                && preg_match('/^<\/\w/', $line)
+                && preg_match('/^<([\w:\-.,]+)/', $lines[$i - 1], $openingTag)
+                && preg_match('/^<\/([\w:\-.,]+)/', $line, $closingTag)
+                && $openingTag[1] === $closingTag[1]
+            ) {
+                $str .= $line;
+                if (!$inComment) {
+                    $deep--;
+                }
+            } elseif (preg_match('/<\w/', $line) && !preg_match('/<\//', $line) && !preg_match('/\/>/', $line)) {
+                $str .= !$inComment ? $this->getPaddedString($line, $deep++) : $line;
+            } elseif (preg_match('/<\w/', $line) && preg_match('/<\//', $line)) {
+                $str .= !$inComment ? $this->getPaddedString($line, $deep) : $line;
+            } elseif (preg_match('/<\//', $line)) {
+                $str .= !$inComment ? $this->getPaddedString($line, --$deep) : $line;
+            } elseif (preg_match('/\/>/', $line)) {
+                $str .= !$inComment ? $this->getPaddedString($line, $deep) : $line;
+            } elseif (preg_match('/<\?/', $line)) {
+                $str .= $this->getPaddedString($line, $deep);
+            } elseif (str_contains($line, 'xmlns:') || str_contains($line, 'xmlns=')) {
+                $str .= $this->getPaddedString($line, $deep);
             } else {
-                $output .= $this->getOutputForPart($part);
+                $str .= $line;
             }
         }
 
-        return trim(preg_replace('~>'.$this->padChar.'+<~', '><', $output));
+        return (($str[0] ?? '') === "\n") ? substr($str, 1) : $str;
     }
 
-    private function getXmlParts(string $xml): array
+    private function splitIntoLines(string $text): array
     {
-        $withNewLines = preg_replace('/(>)(<)(\/*)/', "$1\n$2$3", trim($xml));
-        return explode("\n", $withNewLines);
+        $text = preg_replace('/>\s*</', '><', $text);
+        $text = preg_replace('/</', '~::~<', $text);
+        $text = preg_replace('/\s*xmlns:/', '~::~xmlns:', $text);
+        $text = preg_replace('/\s*xmlns=/', '~::~xmlns=', $text);
+        return explode('~::~', $text);
     }
 
-    private function getOutputForPart(string $part, $eol = PHP_EOL): string
+    private function getPaddedString(string $string, int $depth): string
     {
-        $output = '';
-        $this->runPre($part);
-
-        if ($this->preserveWhitespace) {
-            $output .= $part . $eol;
-        } else {
-            $part = trim($part);
-            $output .= $this->getPaddedString($part) . $eol;
-        }
-
-        $this->runPost($part);
-
-        return $output;
-    }
-
-    private function runPre(string $part): void
-    {
-        if ($this->isComment($part)) {
-            return;
-        }
-        if ($this->isClosingTag($part)) {
-            $this->depth--;
-        }
-    }
-
-    private function runPost(string $part): void
-    {
-        if ($this->isComment($part)) {
-            return;
-        }
-        if ($this->isOpeningCdataTag($part) && $this->isClosingCdataTag($part)) {
-            return;
-        }
-        if ($this->isOpeningTag($part)) {
-            $this->depth++;
-        }
-        if ($this->isClosingCdataTag($part)) {
-            $this->preserveWhitespace = false;
-        }
-        if ($this->isOpeningCdataTag($part)) {
-            $this->preserveWhitespace = true;
-        }
-    }
-
-    private function getPaddedString(string $part): string
-    {
-        return str_pad($part, strlen($part) + ($this->depth * $this->indent), $this->padChar, STR_PAD_LEFT);
-    }
-
-    private function isComment(string $part): bool
-    {
-        return (bool) preg_match('/^\s*<!--.*?-->\s*$/', $part);
-    }
-
-    private function isOpeningTag(string $part): bool
-    {
-        return (bool) preg_match('/^<[^\/]*>$/', $part);
-    }
-
-    private function isClosingTag(string $part): bool
-    {
-        return (bool) preg_match('/^\s*<\//', $part);
-    }
-
-    private function isOpeningCdataTag(string $part): bool
-    {
-        return str_starts_with($part, '<![CDATA[');
-    }
-
-    private function isClosingCdataTag(string $part): bool
-    {
-        return str_ends_with($part, ']]>');
+        return "\n" . str_repeat($this->padChar, $depth * $this->indent) . $string;
     }
 }

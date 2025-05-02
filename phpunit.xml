@@ -11,8 +11,10 @@
 	displayDetailsOnTestsThatTriggerWarnings="true"
 	cacheResult="false"
 	colors="true"
-	failOnRisky="true"
-	failOnWarning="true"
+	failOnDeprecation="true"
+    failOnNotice="true"
+    failOnRisky="true"
+    failOnWarning="true"
 >
 	<testsuites>
 		<testsuite name="Unit">

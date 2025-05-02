@@ -16,6 +16,13 @@ final class FormatterTest extends TestCase
         $this->subject = new Formatter();
     }
 
+    public function testEmptyString(): void
+    {
+        $input = '';
+        $expected = '';
+        self::assertEquals($expected, $this->subject->format($input));
+    }
+
     public function testItShouldIndentANestedElement(): void
     {
         $input = '<?xml version="1.0" encoding="UTF-8"?><foo><bar>Baz</bar></foo>';
@@ -299,6 +306,157 @@ XML;
     <!-- comment -->
     <type>select</type>
 </config>
+XML;
+        self::assertEquals($expected, $this->subject->format($input));
+    }
+
+    public function testKeepXmlWithIndentedHTMLComments(): void
+    {
+        $input = <<<XML
+<?xml version="1.0"?>
+<T3DataStructure>
+    <sheets>
+        <!--
+            ################################
+              SHEET General Settings
+            ################################
+        -->
+        <sDEF>
+            <ROOT>
+                <sheetTitle>Settings</sheetTitle>
+            </ROOT>
+        </sDEF>
+    </sheets>
+</T3DataStructure>
+XML;
+
+        $expected = <<<XML
+<?xml version="1.0"?>
+<T3DataStructure>
+    <sheets>
+        <!--
+            ################################
+              SHEET General Settings
+            ################################
+        -->
+        <sDEF>
+            <ROOT>
+                <sheetTitle>Settings</sheetTitle>
+            </ROOT>
+        </sDEF>
+    </sheets>
+</T3DataStructure>
+XML;
+        self::assertEquals($expected, $this->subject->format($input));
+    }
+
+    public function testWithEmptyTag(): void
+    {
+        $input = '<?xml version="1.0" encoding="UTF-8"?><foo><bar></bar></foo>';
+        $expected = <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<foo>
+    <bar></bar>
+</foo>
+XML;
+        self::assertEquals($expected, $this->subject->format($input));
+    }
+
+    public function testWithEmptyMultilineTag(): void
+    {
+        $input = <<<XML
+<?xml version="1.0"?>
+<foo>
+    <bar>
+    </bar>
+</foo>
+XML;
+        $expected = <<<XML
+<?xml version="1.0"?>
+<foo>
+    <bar></bar>
+</foo>
+XML;
+        self::assertEquals($expected, $this->subject->format($input));
+    }
+
+    public function testWithSelfClosingTag(): void
+    {
+        $input = <<<XML
+<?xml version="1.0"?>
+<foo>
+    <bar/>
+</foo>
+XML;
+        $expected = <<<XML
+<?xml version="1.0"?>
+<foo>
+    <bar/>
+</foo>
+XML;
+        self::assertEquals($expected, $this->subject->format($input));
+    }
+
+    public function testRSSFeed(): void
+    {
+        $input = <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"
+    xmlns:content="http://purl.org/rss/1.0/modules/content/"
+    xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:atom="http://www.w3.org/2005/Atom"
+    xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+    xmlns:slash="http://purl.org/rss/1.0/modules/slash/"
+>
+    <channel>
+        <title>Example</title>
+    </channel>
+</rss>
+XML;
+
+        $expected = <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"
+    xmlns:content="http://purl.org/rss/1.0/modules/content/"
+    xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:atom="http://www.w3.org/2005/Atom"
+    xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+    xmlns:slash="http://purl.org/rss/1.0/modules/slash/"
+>
+    <channel>
+        <title>Example</title>
+    </channel>
+</rss>
+XML;
+        self::assertEquals($expected, $this->subject->format($input));
+    }
+
+    public function testRSSFeedWithOneLineRssTagAttributes(): void
+    {
+        $input = <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:wfw="http://wellformedweb.org/CommentAPI/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:sy="http://purl.org/rss/1.0/modules/syndication/" xmlns:slash="http://purl.org/rss/1.0/modules/slash/">
+    <channel>
+        <title>Example</title>
+    </channel>
+</rss>
+XML;
+
+        $expected = <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"
+    xmlns:content="http://purl.org/rss/1.0/modules/content/"
+    xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:atom="http://www.w3.org/2005/Atom"
+    xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+    xmlns:slash="http://purl.org/rss/1.0/modules/slash/">
+    <channel>
+        <title>Example</title>
+    </channel>
+</rss>
 XML;
         self::assertEquals($expected, $this->subject->format($input));
     }
