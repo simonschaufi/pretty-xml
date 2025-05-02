@@ -20,6 +20,8 @@ composer require simonschaufi/pretty-xml
 
 ### How to use
 
+#### Prettify
+
 To use, give it a badly indented (but well-formed and valid) XML string:
 
 ```php
@@ -39,6 +41,29 @@ And you can change the indent character:
 
 ```php
 $formatter->setIndentCharacter("\t");
+```
+
+#### Minify
+
+```php
+use PrettyXml\Formatter;
+
+$formatter = new Formatter();
+echo htmlspecialchars($formatter->minify(<<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<foo>
+    <bar>Baz</bar>
+</foo>
+XML));
+
+// keep comments
+echo htmlspecialchars($formatter->minify(<<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<foo>
+    <!-- comment -->
+    <bar>Baz</bar>
+</foo>
+XML, true));
 ```
 
 ## Thanks
