@@ -41,4 +41,8 @@ And you can change the indent character:
 $formatter->setIndentCharacter("\t");
 ```
 
+## Thanks
+
+Thanks to [vkBeautify](https://github.com/vkiryukhin/vkBeautify/blob/master/vkbeautify.js) for their algorithm.
+
 [1]: https://getcomposer.org/
