@@ -460,4 +460,114 @@ XML;
 XML;
         self::assertEquals($expected, $this->subject->format($input));
     }
+
+    // Minify
+
+    public function testSimplyMinify(): void
+    {
+        $input = <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<foo>
+    <bar>Baz</bar>
+</foo>
+XML;
+
+        $expected = '<?xml version="1.0" encoding="UTF-8"?><foo><bar>Baz</bar></foo>';
+
+        self::assertEquals($expected, $this->subject->minify($input));
+    }
+
+    public function testSimplyMinifyAndRemoveComments(): void
+    {
+        $input = <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<foo>
+    <!-- comment -->
+    <bar>Baz</bar>
+</foo>
+XML;
+
+        $expected = '<?xml version="1.0" encoding="UTF-8"?><foo><bar>Baz</bar></foo>';
+
+        self::assertEquals($expected, $this->subject->minify($input));
+    }
+
+    public function testSimplyMinifyAndKeepComments(): void
+    {
+        $input = <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<foo>
+    <!-- comment -->
+    <bar>Baz</bar>
+</foo>
+XML;
+
+        $expected = '<?xml version="1.0" encoding="UTF-8"?><foo><!-- comment --><bar>Baz</bar></foo>';
+
+        self::assertEquals($expected, $this->subject->minify($input, true));
+    }
+
+    public function testMinifyXMLAttributes(): void
+    {
+        $input = <<<XML
+<?xml
+    version = "1.0"
+    encoding = "UTF-8"
+    ?>
+<foo foo = "bar"
+    baz = "qux"
+>
+    <!-- comment -->
+    <bar>Baz</bar>
+</foo>
+XML;
+
+        $expected = '<?xml version="1.0" encoding="UTF-8"?><foo foo="bar" baz="qux"><!-- comment --><bar>Baz</bar></foo>';
+
+        self::assertEquals($expected, $this->subject->minify($input, true));
+    }
+
+    public function testMinifyXMLAttributesInMultipleLines(): void
+    {
+        $input = <<<XML
+<?xml
+    version="1.0"
+    encoding="UTF-8"
+    ?>
+<foo foo="bar"
+    baz="qux"
+>
+    <!-- comment -->
+    <bar>Baz</bar>
+</foo>
+XML;
+
+        $expected = '<?xml version="1.0" encoding="UTF-8"?><foo foo="bar" baz="qux"><!-- comment --><bar>Baz</bar></foo>';
+
+        self::assertEquals($expected, $this->subject->minify($input, true));
+    }
+
+    public function testMinifyRSSFeed(): void
+    {
+        $input = <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"
+    xmlns:content="http://purl.org/rss/1.0/modules/content/"
+    xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:atom="http://www.w3.org/2005/Atom"
+    xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+    xmlns:slash="http://purl.org/rss/1.0/modules/slash/"
+>
+    <channel>
+        <title>Example</title>
+    </channel>
+</rss>
+XML;
+
+        $expected = <<<XML
+<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:wfw="http://wellformedweb.org/CommentAPI/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:sy="http://purl.org/rss/1.0/modules/syndication/" xmlns:slash="http://purl.org/rss/1.0/modules/slash/"><channel><title>Example</title></channel></rss>
+XML;
+        self::assertEquals($expected, $this->subject->minify($input));
+    }
 }

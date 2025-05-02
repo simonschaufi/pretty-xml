@@ -67,6 +67,29 @@ class Formatter
         return (($str[0] ?? '') === "\n") ? substr($str, 1) : $str;
     }
 
+    public function minify(string $xml, bool $preserveComments = false): string
+    {
+        if (!$preserveComments) {
+            $xml = preg_replace('/<![ \r\n\t]*(--([^\-]|[\r\n]|-[^\-])*--[ \r\n\t]*)>/', '', $xml);
+            $xml = preg_replace('/[ \r\n\t]+xmlns/', ' xmlns', $xml);
+        }
+
+        // minify xml declaration
+        $xml = preg_replace('/\s*\?>/', '?>', $xml);
+
+        // removes spaces around = and between attributes
+        $xml = preg_replace('/\s*=\s*/', '=', $xml);
+
+        // removes spaces between attributes
+        $xml = preg_replace('/\s+/', ' ', $xml);
+
+        // removes spaces before /> and between tags
+        $xml = preg_replace('/\s*\/>/', '/>', $xml);
+
+        // removes spaces before closing tag
+        return preg_replace('/\s*>\s*</', '><', $xml);
+    }
+
     private function splitIntoLines(string $text): array
     {
         $text = preg_replace('/>\s*</', '><', $text);
