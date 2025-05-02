@@ -461,6 +461,18 @@ XML;
         self::assertEquals($expected, $this->subject->format($input));
     }
 
+    public function testIssue6(): void
+    {
+        $input = '<foo xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><bar></bar></foo>';
+        $expected = <<<XML
+<foo
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <bar></bar>
+</foo>
+XML;
+        self::assertEquals($expected, $this->subject->format($input));
+    }
+
     // Minify
 
     public function testSimplyMinify(): void
