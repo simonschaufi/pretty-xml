@@ -473,6 +473,18 @@ XML;
         self::assertEquals($expected, $this->subject->format($input));
     }
 
+    public function testIssue6WithDoubleSlash(): void
+    {
+        $input = '<foo xmlns:xsi="//"><bar></bar></foo>';
+        $expected = <<<XML
+<foo
+    xmlns:xsi="//">
+    <bar></bar>
+</foo>
+XML;
+        self::assertEquals($expected, $this->subject->format($input));
+    }
+
     // Minify
 
     public function testSimplyMinify(): void
