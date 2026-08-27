@@ -485,6 +485,144 @@ XML;
         self::assertEquals($expected, $this->subject->format($input));
     }
 
+    // Atomic sections: comments, CDATA and doctype declarations
+
+    public function testItDoesNotCrashOnCdataInsideAComment(): void
+    {
+        $input = <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Example: <![CDATA[<a><b>x</b></a>]]> </b></a> -->
+<root>
+    <item>v</item>
+</root>
+XML;
+        $expected = <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Example: <![CDATA[<a><b>x</b></a>]]> </b></a> -->
+<root>
+    <item>v</item>
+</root>
+XML;
+        self::assertEquals($expected, $this->subject->format($input));
+    }
+
+    public function testItKeepsMarkupInsideACommentIntact(): void
+    {
+        $input = <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+    <!-- <config>
+        <foo>bar</foo>
+    </config> -->
+    <item>v</item>
+</root>
+XML;
+        $expected = <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+    <!-- <config>
+        <foo>bar</foo>
+    </config> -->
+    <item>v</item>
+</root>
+XML;
+        self::assertEquals($expected, $this->subject->format($input));
+    }
+
+    public function testItKeepsWhitespaceBetweenTagsInsideCdata(): void
+    {
+        $input = <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+    <item><![CDATA[<config>
+    <foo>bar</foo>
+</config>]]></item>
+</root>
+XML;
+        $expected = <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+    <item>
+        <![CDATA[<config>
+    <foo>bar</foo>
+</config>]]>
+    </item>
+</root>
+XML;
+        self::assertEquals($expected, $this->subject->format($input));
+    }
+
+    public function testItDoesNotLeakIndentationAfterACommentContainingMarkup(): void
+    {
+        $input = <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+    <!-- <b>bold</b> and <![CDATA[x]]> -->
+    <first>a</first>
+    <second>b</second>
+</root>
+XML;
+        $expected = <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+    <!-- <b>bold</b> and <![CDATA[x]]> -->
+    <first>a</first>
+    <second>b</second>
+</root>
+XML;
+        self::assertEquals($expected, $this->subject->format($input));
+    }
+
+    public function testItKeepsADoctypeWithAnInternalSubsetOnOneLine(): void
+    {
+        $input = <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE root [<!ENTITY foo "bar"><!ENTITY baz "qux">]>
+<root>
+    <item>v</item>
+</root>
+XML;
+        $expected = <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE root [<!ENTITY foo "bar"><!ENTITY baz "qux">]>
+<root>
+    <item>v</item>
+</root>
+XML;
+        self::assertEquals($expected, $this->subject->format($input));
+    }
+
+    public function testItDoesNotCrashOnUnbalancedMarkup(): void
+    {
+        $input = '<?xml version="1.0" encoding="UTF-8"?><foo></foo></bar></baz>';
+        $expected = <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<foo></foo>
+</bar>
+</baz>
+XML;
+        self::assertEquals($expected, $this->subject->format($input));
+    }
+
+    public function testItDoesNotTreatCdataContentAsNamespaceDeclarations(): void
+    {
+        $input = <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+    <item><![CDATA[use xmlns:foo="bar" here]]></item>
+</root>
+XML;
+        $expected = <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+    <item>
+        <![CDATA[use xmlns:foo="bar" here]]>
+    </item>
+</root>
+XML;
+        self::assertEquals($expected, $this->subject->format($input));
+    }
+
     // Minify
 
     public function testSimplyMinify(): void
@@ -592,6 +730,24 @@ XML;
         $expected = <<<XML
 <?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:wfw="http://wellformedweb.org/CommentAPI/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:sy="http://purl.org/rss/1.0/modules/syndication/" xmlns:slash="http://purl.org/rss/1.0/modules/slash/"><channel><title>Example</title></channel></rss>
 XML;
+        self::assertEquals($expected, $this->subject->minify($input));
+    }
+
+    public function testMinifyKeepsCdataContentIntact(): void
+    {
+        $input = <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<foo>
+    <bar><![CDATA[some
+whitespaced   words
+      blah]]></bar>
+</foo>
+XML;
+
+        $expected = '<?xml version="1.0" encoding="UTF-8"?><foo><bar><![CDATA[some' . "\n"
+            . 'whitespaced   words' . "\n"
+            . '      blah]]></bar></foo>';
+
         self::assertEquals($expected, $this->subject->minify($input));
     }
 }
