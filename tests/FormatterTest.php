@@ -750,4 +750,58 @@ XML;
 
         self::assertEquals($expected, $this->subject->minify($input));
     }
+
+    public function testItDoesNotAddABlankLineAfterATextNode(): void
+    {
+        $input = <<<XML
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<T3DataStructure>
+	<ROOT>
+		<config>
+			plain text
+			<type>select</type>
+		</config>
+	</ROOT>
+</T3DataStructure>
+XML;
+        $expected = <<<XML
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<T3DataStructure>
+    <ROOT>
+        <config>
+			plain text
+            <type>select</type>
+        </config>
+    </ROOT>
+</T3DataStructure>
+XML;
+
+        self::assertEquals($expected, $this->subject->format($input));
+    }
+
+    /**
+     * Formatting already-formatted output must be a no-op, otherwise a
+     * format-process-format cycle never reaches a fixpoint.
+     *
+     * @dataProvider idempotenceProvider
+     */
+    public function testFormattingIsIdempotent(string $input): void
+    {
+        $once = $this->subject->format($input);
+
+        self::assertEquals($once, $this->subject->format($once));
+    }
+
+    public static function idempotenceProvider(): array
+    {
+        return [
+            'text node before an element' => ["<r>\n\ttext\n\t<e>1</e>\n</r>"],
+            'character entity as text' => ["<r>\n\t&#xA0;\n\t<e>1</e>\n</r>"],
+            'mixed content' => ['<p>hello <b>world</b> tail <i>x</i></p>'],
+            'text node before cdata' => ["<r>\n\ttext\n\t<![CDATA[keep   me\n raw]]>\n\t<e/>\n</r>"],
+            'text node before a comment' => ["<r>\n\ttext\n\t<!-- c -->\n\t<e>1</e>\n</r>"],
+            'text node after an element' => ["<r>\n\t<e>1</e>\n\ttail text\n</r>"],
+            'nested elements only' => ["<?xml version=\"1.0\"?>\n<a>\n\t<b>c</b>\n</a>"],
+        ];
+    }
 }
