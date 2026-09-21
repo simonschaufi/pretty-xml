@@ -177,7 +177,7 @@ class Formatter
         $text = preg_replace('/</', '~::~<', $text);
         $text = preg_replace('/\s*xmlns:/', '~::~xmlns:', $text);
         $text = preg_replace('/\s*xmlns=/', '~::~xmlns=', $text);
-        return explode('~::~', $text);
+        return array_map('rtrim', explode('~::~', $text));
     }
 
     private function getPaddedString(string $string, int $depth): string
